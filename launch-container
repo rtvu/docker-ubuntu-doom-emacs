@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIRECTORY=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+PROJECT_NAME=$(basename "$SCRIPT_DIRECTORY")
+
+BUILD="false"
+VERBOSE="false"
+VERBOSE_ALL="false"
+while getopts "bvV" OPTION; do
+  case "$OPTION" in
+    b) BUILD="true";;
+    v) VERBOSE="true";;
+    V) VERBOSE_ALL="true";;
+  esac
+done
+
+failed="false"
+
+for DIRECTORY in .config-emacs .doom.d org ; do
+  if [[ ! -d "$SCRIPT_DIRECTORY/../$DIRECTORY" ]] ; then
+    echo "Missing directory: $DIRECTORY"
+    failed="true"
+  fi
+done
+
+if [[ "$failed" == "true" ]] ; then
+  exit 1
+fi
+
+git -C "$SCRIPT_DIRECTORY" submodule update --init --recursive --remote
+
+if [[ "$BUILD" == "true" ]]; then
+  if [[ "$VERBOSE_ALL" == "true" ]]; then
+    "$SCRIPT_DIRECTORY/base-image/build-image" -V
+  else
+    "$SCRIPT_DIRECTORY/base-image/build-image"
+  fi
+
+  if [[ "$VERBOSE" == "true" || "$VERBOSE_ALL" == "true" ]]; then
+    printf '\nBuilding: "%s-main"\n\n' "$PROJECT_NAME"
+
+    docker compose --project-name "$PROJECT_NAME" --file "$SCRIPT_DIRECTORY/docker-compose.yml" build
+  else
+    docker compose --project-name "$PROJECT_NAME" --file "$SCRIPT_DIRECTORY/docker-compose.yml" build --quiet
+  fi
+fi
+
+docker compose --project-name "$PROJECT_NAME" --file "$SCRIPT_DIRECTORY/docker-compose.yml" up --detach
+docker attach "$PROJECT_NAME-main-1"
+docker compose --project-name "$PROJECT_NAME" --file "$SCRIPT_DIRECTORY/docker-compose.yml" down

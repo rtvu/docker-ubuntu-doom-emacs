@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+shopt -s dotglob
+
+if [[ -d "$HOME/.config/emacs" ]] ; then
+  rm -rf "$HOME/.config/emacs"/*
+  git clone --depth 1 https://github.com/doomemacs/doomemacs "$HOME/.config/emacs"
+fi
