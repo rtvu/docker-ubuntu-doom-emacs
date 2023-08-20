@@ -19,6 +19,7 @@ Run Ubuntu container with Doom Emacs installed.
   * `../.config-emacs`
   * `../.doom.d`
   * `../org`
+  * `~/workspace`
 
 # Scripts
 

@@ -13,3 +13,4 @@ services:
       - ../.doom.d:/home/user/.doom.d
       - ../.config-emacs:/home/user/.config/emacs
       - ../org:/home/user/org
+      - ~/workspace:/home/user/workspace
